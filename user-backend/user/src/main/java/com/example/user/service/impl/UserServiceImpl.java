@@ -32,5 +32,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         this.userRoleService = userRoleService;
     }
 
-
+    @Override
+    public List<Map<String, Object>> getUserRoleAndPermissionsByUserId(List<Long> userIds) {
+        if (userIds == null || userIds.size() == 0) {
+            return new ArrayList<>();
+        }
+        return userMapper.getUserRoleAndPermissionsByUserId(userIds);
+    }
+    @Override
+    public List<Map<String, Object>> getUserList(String searchContent, Integer pageNum, Integer pageSize) {
+        return userMapper.getUserList(searchContent,(pageNum - 1) * pageSize, pageSize);
+    }
 }

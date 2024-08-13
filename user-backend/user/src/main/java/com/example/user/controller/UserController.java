@@ -17,9 +17,7 @@ import com.example.user.service.UserRoleService;
 import com.example.user.service.UserService;
 import com.example.user.utils.DataUtils;
 import com.example.user.utils.UserUtils;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -29,10 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @Api(tags = "user-api")
@@ -48,5 +43,30 @@ public class UserController {
         this.userRoleService = userRoleService;
     }
 
+    /**
+     * Created on 2024/8/13
+     * Description: 获取用户列表
+     *
+     * @param searchContent
+     * @param pageNum
+     * @param pageSize
+     * @return ResponseVO<Map<String,Object>>
+     * @author wangjiahui
+     */
+    @ApiOperation(value = "获取用户列表")
+    @PreAuthorize("hasAuthority('" + PermissionCode.USER_MANAGE + "')")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "query", name="searchContent", value="检索词", dataType="String"),
+            @ApiImplicitParam(name = "pageNum", value = "第几页", paramType = "query", required = true, dataType = "int"),
+            @ApiImplicitParam(name = "pageSize", value = "每页显示数目", paramType = "query", required = true, dataType = "int")
+    })
+    @PostMapping("/getUserList")
+    public ResponseVO<List<Map<String, Object>>> getUserList(
+            @RequestParam(value = "searchContent", defaultValue = "") String searchContent,
+            @RequestParam(value = "pageNum", required = true) Integer pageNum,
+            @RequestParam(value = "pageSize", required = true) Integer pageSize) {
 
+
+        return ResponseVO.success(userService.getUserList(searchContent,pageNum,pageSize));
+    }
 }
