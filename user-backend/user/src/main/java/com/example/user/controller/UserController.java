@@ -54,7 +54,6 @@ public class UserController {
      * @author wangjiahui
      */
     @ApiOperation(value = "获取用户列表")
-    @PreAuthorize("hasAuthority('" + PermissionCode.USER_MANAGE + "')")
     @ApiImplicitParams({
             @ApiImplicitParam(paramType = "query", name="searchContent", value="检索词", dataType="String"),
             @ApiImplicitParam(name = "pageNum", value = "第几页", paramType = "query", required = true, dataType = "int"),

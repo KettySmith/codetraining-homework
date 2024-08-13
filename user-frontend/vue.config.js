@@ -31,6 +31,15 @@ module.exports = {
   productionSourceMap: false,
   devServer: {
     port: port,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8090',  // 后端接口的地址
+        changeOrigin: true,
+        pathRewrite: {
+          '^/api': ''  // 将 /api 前缀替换为空，如果你的后端不需要这个前缀
+        }
+      }
+    },
     open: true,
     overlay: {
       warnings: false,

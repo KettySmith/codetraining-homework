@@ -181,13 +181,14 @@ export default {
           console.error("Error fetching tables:", error);
         });
     },
-    fetchTableData(tableName) {
+    fetchTableData() {
       this.listLoading = true;
 
       console.log("waiting...");
       axios
-        .get(`/api/user/${tableName}`)
+        .get(`/api/users/getUserList`)
         .then((response) => {
+          console.log(response.data.data)
           this.showTableName = tableName;
           this.showTableColumns = response.data.columns;
           this.showTableList = response.data.data;
