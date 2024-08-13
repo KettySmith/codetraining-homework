@@ -59,13 +59,12 @@ export const constantRoutes = [
     path: '/role',
     component: Layout,
     redirect: '/role',
-    name: 'Role',
     children: [
       {
         path: 'role',
         name: 'Role',
         component: () => import('@/views/role/index'),
-        meta: { title: 'Role', icon: 'role' }
+        meta: { title: 'Role', icon: 'el-icon-s-opportunity' }
       }
     ]
   },
@@ -78,7 +77,7 @@ export const constantRoutes = [
         path: 'index',
         name: 'Permission',
         component: () => import('@/views/permission/index'),
-        meta: { title: 'Permission', icon: 'lock' }
+        meta: { title: 'Permission', icon: 'el-icon-info' }
       }
     ]
   },
