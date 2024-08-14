@@ -35,4 +35,14 @@ public interface UserMapper extends BaseMapper<User> {
     List<Map<String, Object>> getUserRoleAndPermissionsByUserId(@Param("userIds") List<Long> userIds);
 
 
+
+    @Select("SELECT user_name, true_name, introduction, create_time, update_time, status  " +
+            "FROM user  " +
+            "WHERE user_name LIKE  CONCAT('%', #{searchContent}, '%') "  +
+            "ORDER BY create_time DESC  " +
+            "LIMIT  ${(pageNum - 1) * pageSize},${pageSize}")
+    List<Map<String, Object>> getUserList(@Param("searchContent") String searchContent,
+                                          @Param("pageNum")Integer pageNum,
+                                          @Param("pageSize")  Integer pageSize);
+
 }

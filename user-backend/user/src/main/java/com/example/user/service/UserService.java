@@ -13,4 +13,5 @@ public interface UserService extends IService<User> {
 
     List<Map<String, Object>> getUserRoleAndPermissionsByUserId(List<Long> userIds);
 
+    List<Map<String, Object>> getUserList(String searchContent, Integer pageNum, Integer pageSize);
 }

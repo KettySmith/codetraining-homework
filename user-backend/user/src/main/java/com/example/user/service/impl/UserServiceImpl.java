@@ -40,4 +40,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return userMapper.getUserRoleAndPermissionsByUserId(userIds);
     }
 
+    @Override
+    public List<Map<String, Object>> getUserList(String searchContent, Integer pageNum, Integer pageSize) {
+        return userMapper.getUserList(searchContent, pageNum,  pageSize);
+    }
+
 }

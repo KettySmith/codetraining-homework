@@ -44,20 +44,28 @@ public class UserController {
         this.userRoleService = userRoleService;
     }
 
+    /**
+     * Created on 2024/8/14
+     * Description: 获取用户列表
+     *
+     * @param searchContent
+     * @param pageSize
+     * @param pageNum
+     * @return ResponseVO<Map<String,Object>>
+     * @author wangjiahui
+     */
     @ApiOperation(value = "获取用户列表", notes = "获取用户列表")
-//    @ApiImplicitParams({
-//            @ApiImplicitParam(paramType = "query", name = "searchContent", value = "检索关键词", dataType = "String"),
-//            @ApiImplicitParam(paramType = "query", name = "pageSize", value = "单页元素数目", dataType = "int"),
-//            @ApiImplicitParam(paramType = "query", name = "pageNum", value = "页码", dataType = "int")
-//    })
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "query", name = "searchContent", value = "检索关键词", dataType = "String"),
+            @ApiImplicitParam(paramType = "query", name = "pageNum", value = "页码", dataType = "int"),
+            @ApiImplicitParam(paramType = "query", name = "pageSize", value = "单页元素数目", dataType = "int")
+    })
     @GetMapping(value = "/getUserList")
-//    public ResponseVO<Map<String, Object>> getUserList(@RequestParam(value = "searchContent",required = false)String searchContent,
-//                                                                  @RequestParam(value = "pageSize",required = false)Integer pageSize,
-//                                                                  @RequestParam(value = "pageNum",required = false)Integer pageNum) {
-//        return ResponseVO.success("suscess");
-//    }
-    public ResponseVO<Map<String, Object>> getUserList() {
-        return ResponseVO.success("suscess");
+    public ResponseVO<List<Map<String, Object>>> getUserList(@RequestParam(value = "searchContent",required = false,defaultValue = "")String searchContent,
+                                                       @RequestParam(value = "pageNum",required = false)Integer pageNum,
+                                                       @RequestParam(value = "pageSize",required = false)Integer pageSize) {
+        return ResponseVO.success(userService.getUserList(searchContent,pageNum,pageSize));
+
     }
 
 
