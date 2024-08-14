@@ -15,9 +15,7 @@ import com.example.user.service.PermissionService;
 import com.example.user.service.RolePermissionService;
 import com.example.user.service.RoleService;
 import com.example.user.service.UserRoleService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -44,6 +42,22 @@ public class RoleController {
         this.permissionService = permissionService;
     }
 
+    /**
+     * Created on 2024/8/14
+     * Description: 获取所有用户角色
+
+     * @return ResponseVO<List<Map<String,Object>>>
+     * @author wangjiahui
+     */
+    @ApiOperation(value = "获取所有用户角色", notes = "获取所有用户角色list")
+    @ApiImplicitParams({
+    })
+    @GetMapping(value = "/getRoles")
+    public ResponseVO<List<Map<String, Object>>> getRoles() {
+
+        return ResponseVO.success(roleService.getRoles());
+
+    }
 
 
 }

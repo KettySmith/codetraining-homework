@@ -367,8 +367,9 @@ export default {
       editId: "",
     };
   },
-  created() {
-    this.getUserList();
+  mounted() {
+    this.getAllRoles()
+    this.getUserList()
   },
   computed: {
     filteredColumns() {
@@ -376,6 +377,7 @@ export default {
     },
   },
   methods: {
+    //验证
     userNameValidator(rule, value, callback) {
       if (!value) {
         callback(new Error("请输入用户名"));
@@ -411,6 +413,18 @@ export default {
       this.tableData.minCreateTime = "";
       this.tableData.maxCreateTime = "";
     },
+
+
+    //方法
+    getAllRoles() {
+      axios
+        .get(`/api/roles/getRoles`)
+      .then(res => {
+        this.allRoles = res.data.data
+      })
+    },
+
+
     getUserList() {
       this.listLoading = true;
 
@@ -459,27 +473,53 @@ export default {
       });
     },
     addData() {
-      const columns = this.filteredColumns.map((column) => ({
-        name: column,
-        value: this.addTemp[column] || "", // 如果没有填写内容，则设置为''
-      }));
+    this.$refs.userEditForm.validate((valid) => {
+      if (valid) {
+        // 如果表单验证通过
+        const params = {
+          userName: this.userEditForm.userName,
+          trueName: this.userEditForm.trueName,
+          password: this.userEditForm.password,
+          email: this.userEditForm.email,
+          gender: this.userEditForm.gender,
+          address: this.userEditForm.address,
+          introduction: this.userEditForm.introduction,
+          phone: this.userEditForm.phone,
+          roleIds: this.userEditForm.roleIds,
+        };
 
-      const formData = new FormData();
-      formData.append("tableName", this.showTableName);
-      formData.append("columns", JSON.stringify(columns));
+        axios
+          .post('/api/users/addUser',  { params })
+          .then((response) => {
+            if (response.data.success) {
+              this.$message({
+                message: '用户添加成功',
+                type: 'success',
+              });
+              this.addDialogFormVisible = false; // 关闭对话框
+              this.getUserList(); // 刷新用户列表
+            } else {
+              this.$message({
+                message: '用户添加失败: ' + response.data.message,
+                type: 'error',
+              });
 
-      axios
-        .post("/api/table/add", formData)
-        .then((response) => {
-          this.$message.success("添加成功");
-          this.fetchTableData(this.showTableName);
-          this.addDialogFormVisible = false;
-        })
-        .catch((error) => {
-          console.error(error);
-          this.addDialogFormVisible = false;
-        });
-    },
+            }
+          })
+          .catch((error) => {
+            console.error('添加用户时出错:', error);
+            this.$message({
+              message: '添加用户时出错，请稍后重试',
+              type: 'error',
+            });
+          });
+      } else {
+        console.log('表单验证失败');
+        return false;
+      }
+    });
+  },
+ 
     handleEdit(row) {
       console.log(row);
       this.dialogStatus = "edit";

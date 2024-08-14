@@ -11,6 +11,10 @@ import com.example.user.utils.DataUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 @Service
 public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements RoleService {
 
@@ -22,5 +26,8 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
     }
 
 
-
+    @Override
+    public List<Map<String, Object>> getRoles() {
+        return roleMapper.getRoles();
+    }
 }

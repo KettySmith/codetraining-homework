@@ -64,14 +64,26 @@ public class UserController {
     public ResponseVO<List<Map<String, Object>>> getUserList(@RequestParam(value = "searchContent",required = false,defaultValue = "")String searchContent,
                                                        @RequestParam(value = "pageNum",required = false)Integer pageNum,
                                                        @RequestParam(value = "pageSize",required = false)Integer pageSize) {
-        System.out.println("@@@"+searchContent);
-        System.out.println("@@@"+pageNum);
-        System.out.println("@@@"+pageSize);
+
         return ResponseVO.success(userService.getUserList(searchContent,pageNum,pageSize));
 
     }
 
 
 
+    @ApiOperation(value = "添加用户", notes = "添加用户")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "query", name = "searchContent", value = "检索关键词", dataType = "String"),
+            @ApiImplicitParam(paramType = "query", name = "pageNum", value = "页码", dataType = "int"),
+            @ApiImplicitParam(paramType = "query", name = "pageSize", value = "单页元素数目", dataType = "int")
+    })
+    @GetMapping(value = "/addUser")
+    public ResponseVO<List<Map<String, Object>>> addUser(@RequestParam(value = "searchContent",required = false,defaultValue = "")String searchContent,
+                                                             @RequestParam(value = "pageNum",required = false)Integer pageNum,
+                                                             @RequestParam(value = "pageSize",required = false)Integer pageSize) {
+
+        return ResponseVO.success(userService.addUser(searchContent,pageNum,pageSize));
+
+    }
 
 }
