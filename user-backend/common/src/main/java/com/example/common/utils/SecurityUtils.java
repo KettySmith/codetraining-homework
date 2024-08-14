@@ -1,3 +1,4 @@
+/*
 package com.example.common.utils;
 
 import com.example.common.config.DevConfig;
@@ -24,10 +25,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+*/
 /**
  * Spring Security工具类
- */
-public class SecurityUtils {
+ *//*
+
+public class SecurityUtis {
 
     public static void setDefaultHttpSecurity(HttpSecurity http, String... permitUrls) throws Exception {
 
@@ -36,25 +39,32 @@ public class SecurityUtils {
         // 禁用cors
         http.cors().disable();
 
-        if (DevConfig.ENABLE_SECURITY) {
-            http.authorizeRequests()
-                    .antMatchers("/swagger-ui.html/**",
-                            "/webjars/**",
-                            "/swagger-resources/**",
-                            "/v2/**",
-                            "/doc.html").permitAll()
-                    .antMatchers(permitUrls).permitAll()
-                    //其他任何请求需要验证权限
-                    .anyRequest().authenticated()
-                    .and().exceptionHandling()
-                    .authenticationEntryPoint((request, response, authenticationException) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED, CommonStatusEnum.UNAUTHORIZED.getMessage()))
-                    .accessDeniedHandler((request, response, accessDeniedException) -> response.sendError(HttpServletResponse.SC_FORBIDDEN, CommonStatusEnum.FORBIDDEN.getMessage()));
-        } else {
-            http.authorizeRequests().anyRequest().permitAll();
-        }
+        // 允许 Swagger 相关资源不需要登录就可以访问
+        http.authorizeRequests()
+                .antMatchers("/swagger-ui.html/**",
+                        "/webjars/**",
+                        "/swagger-resources/**",
+                        "/v2/**",
+                        "/doc.html").permitAll() // 确保 Swagger 相关路径允许所有访问
+                .antMatchers(permitUrls).permitAll(); // 允许传入的其他路径访问
+
+//        // 判断是否启用安全配置
+//        if (DevConfig.ENABLE_SECURITY) {
+//            http.authorizeRequests()
+//                    // 其他任何请求需要验证权限
+//                    .anyRequest().authenticated()
+//                    .and().exceptionHandling()
+//                    .authenticationEntryPoint((request, response, authenticationException) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED, CommonStatusEnum.UNAUTHORIZED.getMessage()))
+//                    .accessDeniedHandler((request, response, accessDeniedException) -> response.sendError(HttpServletResponse.SC_FORBIDDEN, CommonStatusEnum.FORBIDDEN.getMessage()));
+//        } else {
+//            // 如果不启用安全配置，允许所有请求访问
+//            http.authorizeRequests().anyRequest().permitAll();
+//        }
         // 添加过滤器
-        http.addFilterBefore(new LoginFilter(), UsernamePasswordAuthenticationFilter.class);
+//        http.addFilterBefore(new LoginFilter(), UsernamePasswordAuthenticationFilter.class);
+//
     }
+
 
     private static class LoginFilter extends OncePerRequestFilter {
         @Override
@@ -75,12 +85,14 @@ public class SecurityUtils {
         }
     }
 
-    /**
+    */
+/**
      * 检查权限
      *
      * @param needAuthority 需要的角色或权限
      * @return 是否有权限
-     */
+     *//*
+
     public static boolean checkAuthority(String needAuthority) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         for (GrantedAuthority grantedAuthority : authentication.getAuthorities()) {
@@ -93,3 +105,4 @@ public class SecurityUtils {
 
 }
 
+*/

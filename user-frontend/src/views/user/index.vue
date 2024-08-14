@@ -186,7 +186,7 @@ export default {
 
       console.log("waiting...");
       axios
-        .get(`/api/users/getUserList`)
+        .post(`/api/users/getUserList`)
         .then((response) => {
           console.log(response.data.data)
           this.showTableName = tableName;

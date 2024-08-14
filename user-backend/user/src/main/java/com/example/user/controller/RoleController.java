@@ -25,9 +25,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@CrossOrigin
 @RestController
-@Api(tags = "role-api")
-@RequestMapping(ApiConstants.API_PREFIX + "/roles")
+@RequestMapping("/roles")
 public class RoleController {
 
     private final RoleService roleService;

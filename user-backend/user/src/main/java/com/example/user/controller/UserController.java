@@ -1,7 +1,6 @@
 package com.example.user.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.example.common.constant.PermissionCode;
 import com.example.common.enums.CommonStatusEnum;
 import com.example.common.enums.StorageEnum;
 import com.example.common.exceptions.CustomRuntimeException;
@@ -20,18 +19,20 @@ import com.example.user.utils.UserUtils;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
+@CrossOrigin
 @RestController
-@Api(tags = "user-api")
-@RequestMapping(ApiConstants.API_PREFIX + "/users")
+@RequestMapping("/users")
 public class UserController {
 
     private final UserService userService;
@@ -43,29 +44,23 @@ public class UserController {
         this.userRoleService = userRoleService;
     }
 
-    /**
-     * Created on 2024/8/13
-     * Description: 获取用户列表
-     *
-     * @param searchContent
-     * @param pageNum
-     * @param pageSize
-     * @return ResponseVO<Map<String,Object>>
-     * @author wangjiahui
-     */
-    @ApiOperation(value = "获取用户列表")
-    @ApiImplicitParams({
-            @ApiImplicitParam(paramType = "query", name="searchContent", value="检索词", dataType="String"),
-            @ApiImplicitParam(name = "pageNum", value = "第几页", paramType = "query", required = true, dataType = "int"),
-            @ApiImplicitParam(name = "pageSize", value = "每页显示数目", paramType = "query", required = true, dataType = "int")
-    })
-    @PostMapping("/getUserList")
-    public ResponseVO<List<Map<String, Object>>> getUserList(
-            @RequestParam(value = "searchContent", defaultValue = "") String searchContent,
-            @RequestParam(value = "pageNum", required = true) Integer pageNum,
-            @RequestParam(value = "pageSize", required = true) Integer pageSize) {
-
-
-        return ResponseVO.success(userService.getUserList(searchContent,pageNum,pageSize));
+    @ApiOperation(value = "获取用户列表", notes = "获取用户列表")
+//    @ApiImplicitParams({
+//            @ApiImplicitParam(paramType = "query", name = "searchContent", value = "检索关键词", dataType = "String"),
+//            @ApiImplicitParam(paramType = "query", name = "pageSize", value = "单页元素数目", dataType = "int"),
+//            @ApiImplicitParam(paramType = "query", name = "pageNum", value = "页码", dataType = "int")
+//    })
+    @GetMapping(value = "/getUserList")
+//    public ResponseVO<Map<String, Object>> getUserList(@RequestParam(value = "searchContent",required = false)String searchContent,
+//                                                                  @RequestParam(value = "pageSize",required = false)Integer pageSize,
+//                                                                  @RequestParam(value = "pageNum",required = false)Integer pageNum) {
+//        return ResponseVO.success("suscess");
+//    }
+    public ResponseVO<Map<String, Object>> getUserList() {
+        return ResponseVO.success("suscess");
     }
+
+
+
+
 }

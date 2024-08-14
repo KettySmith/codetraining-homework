@@ -35,10 +35,4 @@ public interface UserMapper extends BaseMapper<User> {
     List<Map<String, Object>> getUserRoleAndPermissionsByUserId(@Param("userIds") List<Long> userIds);
 
 
-    @Select("SELECT user_name, introduction, true_name, create_time, update_time, status " +
-            "FROM users " +
-            "WHERE user_name LIKE CONCAT('%', #{searchContent}, '%') " +
-            "ORDER BY create_time DESC " +
-            "LIMIT #{start}, #{size}")
-    List<Map<String, Object>> getUserList(String searchContent, Integer start, Integer size);
 }

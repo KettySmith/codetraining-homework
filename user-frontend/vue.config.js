@@ -33,7 +33,7 @@ module.exports = {
     port: port,
     proxy: {
       '/api': {
-        target: 'http://localhost:8090',  // 后端接口的地址
+        target: 'http://localhost:8090', 
         changeOrigin: true,
         pathRewrite: {
           '^/api': ''  // 将 /api 前缀替换为空，如果你的后端不需要这个前缀

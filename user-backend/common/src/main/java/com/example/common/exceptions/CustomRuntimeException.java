@@ -18,8 +18,7 @@ public class CustomRuntimeException extends RuntimeException {
     }
 
     public CustomRuntimeException(String message) {
-        super(message);
-        this.statusCode = CommonStatusEnum.ERROR;
+        super(message);        this.statusCode = CommonStatusEnum.ERROR;
     }
 
     public IStatusCode getStatusCode() {

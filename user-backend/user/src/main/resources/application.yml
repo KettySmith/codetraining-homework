@@ -23,12 +23,7 @@ mybatis-plus:
     map-underscore-to-camel-case: true
   mapper-locations: classpath:/mappers/*.xml
 
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka
-  instance:
-    prefer-ip-address: true
 
 id-generator:
   worker-id: 1
+
