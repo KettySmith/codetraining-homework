@@ -35,12 +35,15 @@ public interface UserMapper extends BaseMapper<User> {
     List<Map<String, Object>> getUserRoleAndPermissionsByUserId(@Param("userIds") List<Long> userIds);
 
 
-
-    @Select("SELECT user_name, true_name, introduction, create_time, update_time, status  " +
-            "FROM user  " +
-            "WHERE user_name LIKE  CONCAT('%', #{searchContent}, '%') "  +
-            "ORDER BY create_time DESC  " +
-            "LIMIT  ${(pageNum - 1) * pageSize},${pageSize}")
+    @Select("SELECT u.user_name, u.true_name, u.create_time, u.update_time, u.status, " +
+            "GROUP_CONCAT(r.name ORDER BY r.name ASC SEPARATOR ', ') as role_list  " +
+            "FROM user u  " +
+            "LEFT JOIN user_role ur ON u.id = ur.user_id  " +
+            "LEFT JOIN role r ON ur.role_id = r.id  " +
+            "WHERE u.user_name LIKE CONCAT('%', #{searchContent}, '%') "  +
+            "GROUP BY u.id " +
+            "ORDER BY u.create_time DESC  " +
+            "LIMIT ${(pageNum - 1) * pageSize}, ${pageSize}")
     List<Map<String, Object>> getUserList(@Param("searchContent") String searchContent,
                                           @Param("pageNum")Integer pageNum,
                                           @Param("pageSize")  Integer pageSize);

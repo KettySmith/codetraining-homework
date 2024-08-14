@@ -1,9 +1,6 @@
 <template>
   <div class="user-container">
-<div class="filter-container">
-     
-    
-
+    <div class="filter-container">
       <el-button
         v-waves
         class="filter-item"
@@ -13,7 +10,6 @@
       >
         Search
       </el-button>
-      
 
       <el-button
         class="filter-item"
@@ -31,44 +27,63 @@
         reviewer
       </el-checkbox> -->
     </div>
+    <!-- <el-table
+      :key="tableKey"
+      v-loading="listLoading"
+      :data="showTableList.slice(0, 10)"
+      border
+      fit
+      sortable
+      highlight-current-row
+      style="width: 100%"
+      height="800"
+      :row-style="{ height: '100px' }"
+    > -->
+    <!-- 用户列表 -->
     <el-table
-  :key="tableKey"
-  v-loading="listLoading"
-  :data="showTableList.slice(0, 10)" 
-  border
-  fit
-  sortable
-  highlight-current-row
-  style="width: 100%"
-  height="800"
-  :row-style="{ height: '100px' }"
->
-  <el-table-column
-    v-for="column in showTableColumns"
-    :key="column"
-    :prop="column"
-    :label="column"
-    :width="150"
-    show-overflow-tooltip
-  >
-  </el-table-column>
-  <!-- 操作列 -->
-  <el-table-column label="操作" width="200">
-    <template slot-scope="scope">
-      <el-button size="mini" type="primary" @click="handleEdit(scope.row)">
-        Edit
-      </el-button>
-      <el-button size="mini" type="danger" @click="handleDelete(scope.row)">
-        Delete
-      </el-button>
-    </template>
-  </el-table-column>
-</el-table>
+      :data="tableData.list"
+      @selection-change="val => tableData.selection = val"
+      @sort-change="handleSortChange"
+    >
+      <el-table-column type="index" width="60" />
+      <el-table-column type="selection" width="50" />
+      <el-table-column width="50">
+        <template slot-scope="scope">
+          <img :id="'avatar-' + scope.row.id" class="table-avatar">
+        </template>
+      </el-table-column>
+      <el-table-column prop="user_name" label="用户名" sortable="custom" />
+      <el-table-column prop="true_name" label="真实姓名" sortable="custom" />
+      <el-table-column prop="role_list" label="角色" sortable="custom" />
+      <el-table-column prop="create_time" label="创建时间" sortable="custom" />
+      <el-table-column prop="status" label="是否激活" sortable="custom" width="100">
+        <template slot-scope="scope">
+          <el-switch v-model="scope.row.status" :active-value="1" :inactive-value="0" @change="handleSwitch(scope.row)" />
+        </template>
+      </el-table-column>
+      <el-table-column label="操作">
+        <template slot-scope="scope">
+          <el-button type="text" size="small" icon="el-icon-edit" @click="handleEdit(scope.row)">
+            编辑 </el-button>
+          <el-button type="text" size="small" icon="el-icon-delete" style="color: red;" @click="handleDelete([scope.row.id])">
+            删除</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
 
+      <!-- 操作列
+      <el-table-column label="操作" width="200">
+        <template slot-scope="scope">
+          <el-button size="mini" type="primary" @click="handleEdit(scope.row)">
+            Edit
+          </el-button>
+          <el-button size="mini" type="danger" @click="handleDelete(scope.row)">
+            Delete
+          </el-button>
+        </template>
+      </el-table-column> -->
 
     <!-- <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" /> -->
-
-    
 
     <!-- add / edit 对话框 -->
     <el-dialog
@@ -83,14 +98,13 @@
         label-width="120px"
         style="width: 400px; margin-left: 50px"
       >
-      <el-form-item
+        <el-form-item
           v-for="column in filteredColumns"
           :key="column"
           :label="column"
         >
           <el-input v-model="addTemp[column]"></el-input>
         </el-form-item>
-      
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="addDialogFormVisible = false"> Cancel </el-button>
@@ -102,27 +116,38 @@
         </el-button>
       </div>
     </el-dialog>
-      
   </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapGetters } from "vuex";
 import { parseTime } from "@/utils";
 import Pagination from "@/components/Pagination"; // secondary package based on el-pagination
 import axios from "axios";
 
 export default {
-  name: 'User',
+  name: "User",
   components: { Pagination },
 
   computed: {
-    ...mapGetters([
-      'name'
-    ])
+    ...mapGetters(["name"]),
   },
-   data() {
+  data() {
     return {
+      //表格数据
+      tableData: {
+        list: [],
+        total: 0,
+        pageNum: 1,
+        pageSize: 10,
+        userName: '',
+        minCreateTime: '',
+        maxCreateTime: '',
+        orderBy: '',
+        orderMethod: 'asc',
+        selection: []
+      },
+
       //筛选条件
       listQuery: {
         tableName: "",
@@ -135,28 +160,27 @@ export default {
       tableKey: 0,
       listLoading: true,
       total: 0,
-      
 
       //add edit  Dialog
       addDialogFormVisible: false,
-      dialogStatus: '', // 'add' or 'edit'
-      addTemp: {}, 
-      addRules: {}, 
-      addColumns: [], 
+      dialogStatus: "", // 'add' or 'edit'
+      addTemp: {},
+      addRules: {},
+      addColumns: [],
       textMap: {
         add: "新增表格内容",
         edit: "修改表格内容",
       },
-      editId:''
+      editId: "",
     };
   },
-   created() {
+  created() {
     this.fetchTableData();
   },
   computed: {
     filteredColumns() {
-      return this.showTableColumns.filter(column => column !== 'id');
-    }
+      return this.showTableColumns.filter((column) => column !== "id");
+    },
   },
   methods: {
     handleFilter() {
@@ -182,16 +206,21 @@ export default {
         });
     },
     fetchTableData() {
+   
+
       this.listLoading = true;
 
       console.log("waiting...");
+      const params = {
+        searchContent: "",
+        pageNum: 1,
+        pageSize: 5,
+      };
       axios
-        .post(`/api/users/getUserList`)
+      .get(`/api/users/getUserList`, { params })
         .then((response) => {
-          console.log(response.data.data)
-          this.showTableName = tableName;
-          this.showTableColumns = response.data.columns;
-          this.showTableList = response.data.data;
+          console.log(response.data.data);
+         this.tableData.list=response.data.data
           this.listLoading = false;
         })
         .catch((error) => {
@@ -242,7 +271,6 @@ export default {
         .catch((error) => {
           console.error(error);
           this.listLoading = false;
-
         });
     },
     resetTemp() {
@@ -258,10 +286,9 @@ export default {
       this.ColumnAoptions = [];
       this.ColumnBoptions = [];
     },
-    resetaddTemp(){
+    resetaddTemp() {
       //重置add表格的内容（清空）
-      this.addTemp={}
-
+      this.addTemp = {};
     },
     handleCreate() {
       this.resetTemp(); // 重置表单数据
@@ -390,8 +417,6 @@ export default {
       });
     },
     handleAdd() {
-    
-
       this.resetaddTemp(); // 重置表单数据
       this.dialogStatus = "add";
       this.addDialogFormVisible = true;
@@ -400,12 +425,10 @@ export default {
       });
     },
     addData() {
-
-      const columns = this.filteredColumns.map(column => ({
+      const columns = this.filteredColumns.map((column) => ({
         name: column,
-        value: this.addTemp[column] || ''  // 如果没有填写内容，则设置为''
+        value: this.addTemp[column] || "", // 如果没有填写内容，则设置为''
       }));
-     
 
       const formData = new FormData();
       formData.append("tableName", this.showTableName);
@@ -417,33 +440,30 @@ export default {
           this.$message.success("添加成功");
           this.fetchTableData(this.showTableName);
           this.addDialogFormVisible = false;
-
         })
         .catch((error) => {
           console.error(error);
           this.addDialogFormVisible = false;
-
-
         });
     },
-    handleEdit(row){
-      console.log(row)
+    handleEdit(row) {
+      console.log(row);
       this.dialogStatus = "edit";
       this.addTemp = { ...row };
-      this.editId=row.id
+      this.editId = row.id;
       this.addDialogFormVisible = true;
       this.$nextTick(() => {
         this.$refs["addDataForm"].clearValidate(); // 清空表单验证状态
       });
     },
     editData() {
-      const columns = this.filteredColumns.map(column => ({
+      const columns = this.filteredColumns.map((column) => ({
         name: column,
-        value: this.addTemp[column] || ''  // 如果没有填写内容，则设置为''
+        value: this.addTemp[column] || "", // 如果没有填写内容，则设置为''
       }));
       const formData = new FormData();
       formData.append("tableName", this.showTableName);
-      formData.append("id",this.editId)
+      formData.append("id", this.editId);
       formData.append("columns", JSON.stringify(columns));
       axios
         .post("/api/table/update", formData)
@@ -451,15 +471,11 @@ export default {
           this.$message.success("更新成功");
           this.fetchTableData(this.showTableName);
           this.addDialogFormVisible = false;
-
         })
         .catch((error) => {
           console.error(error);
           this.addDialogFormVisible = false;
-
-
         });
-
     },
     handleDelete(row) {
       this.$confirm("确定要删除这一行吗？", "警告", {
@@ -487,9 +503,11 @@ export default {
           this.$message.info("已取消删除");
         });
     },
-  }
-  
-}
+    handleSwitch(){
+
+    }
+  },
+};
 </script>
 
 <style lang="scss" scoped>

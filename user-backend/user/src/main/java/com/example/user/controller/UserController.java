@@ -64,6 +64,9 @@ public class UserController {
     public ResponseVO<List<Map<String, Object>>> getUserList(@RequestParam(value = "searchContent",required = false,defaultValue = "")String searchContent,
                                                        @RequestParam(value = "pageNum",required = false)Integer pageNum,
                                                        @RequestParam(value = "pageSize",required = false)Integer pageSize) {
+        System.out.println("@@@"+searchContent);
+        System.out.println("@@@"+pageNum);
+        System.out.println("@@@"+pageSize);
         return ResponseVO.success(userService.getUserList(searchContent,pageNum,pageSize));
 
     }
