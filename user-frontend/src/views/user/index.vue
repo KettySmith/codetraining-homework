@@ -1,25 +1,67 @@
 <template>
   <div class="user-container">
     <div class="filter-container">
-      <el-button
-        v-waves
-        class="filter-item"
-        type="primary"
-        icon="el-icon-search"
-        @click="handleFilter"
+      <!-- 用户搜索表单 -->
+      <el-form
+        :model="tableData"
+        size="small"
+        :inline="true"
+        label-width="68px"
       >
-        Search
-      </el-button>
+        <el-form-item label="用户名称">
+          <el-input
+            v-model="tableData.userName"
+            placeholder="请输入用户名称"
+            clearable
+            @keyup.enter.native="getUserList"
+          />
+        </el-form-item>
+        <el-form-item label="创建时间">
+          <el-date-picker
+            v-model="tableData.minCreateTime"
+            class="date-picker"
+            value-format="yyyy-MM-dd HH:mm:ss"
+            type="datetime"
+            placeholder="起始日期"
+          />
+          <el-date-picker
+            v-model="tableData.maxCreateTime"
+            class="date-picker"
+            value-format="yyyy-MM-dd HH:mm:ss"
+            type="datetime"
+            placeholder="截止日期"
+          />
+        </el-form-item>
+        <el-form-item>
+          <el-button
+            type="primary"
+            icon="el-icon-search"
+            size="mini"
+            @click="getUserList"
+            >Search</el-button
+          >
+          <el-button icon="el-icon-refresh" size="mini" @click="resetQuery"
+            >Reset</el-button
+          >
+          <el-button
+            type="success"
+            icon="el-icon-edit"
+            size="mini"
+            @click="handleAdd"
+          >
+            Add
+          </el-button>
+          <el-button
+            type="danger"
+            icon="el-icon-delete"
+            size="mini"
+            @click="handleBatchDelete"
+          >
+            Delete</el-button
+          >
+        </el-form-item>
+      </el-form>
 
-      <el-button
-        class="filter-item"
-        style="margin-left: 10px"
-        type="success"
-        icon="el-icon-edit"
-        @click="handleAdd"
-      >
-        Add
-      </el-button>
       <!-- <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
         Export
       </el-button>
@@ -42,36 +84,70 @@
     <!-- 用户列表 -->
     <el-table
       :data="tableData.list"
-      @selection-change="val => tableData.selection = val"
+      v-loading="listLoading"
+      @selection-change="(val) => (tableData.selection = val)"
       @sort-change="handleSortChange"
     >
       <el-table-column type="index" width="60" />
       <el-table-column type="selection" width="50" />
       <el-table-column width="50">
         <template slot-scope="scope">
-          <img :id="'avatar-' + scope.row.id" class="table-avatar">
+          <img :id="'avatar-' + scope.row.id" class="table-avatar" />
         </template>
       </el-table-column>
       <el-table-column prop="user_name" label="用户名" sortable="custom" />
       <el-table-column prop="true_name" label="真实姓名" sortable="custom" />
       <el-table-column prop="role_list" label="角色" sortable="custom" />
       <el-table-column prop="create_time" label="创建时间" sortable="custom" />
-      <el-table-column prop="status" label="是否激活" sortable="custom" width="100">
+      <el-table-column
+        prop="status"
+        label="是否激活"
+        sortable="custom"
+        width="100"
+      >
         <template slot-scope="scope">
-          <el-switch v-model="scope.row.status" :active-value="1" :inactive-value="0" @change="handleSwitch(scope.row)" />
+          <el-switch
+            v-model="scope.row.status"
+            :active-value="1"
+            :inactive-value="0"
+            @change="handleSwitch(scope.row)"
+          />
         </template>
       </el-table-column>
       <el-table-column label="操作">
         <template slot-scope="scope">
-          <el-button type="text" size="small" icon="el-icon-edit" @click="handleEdit(scope.row)">
-            编辑 </el-button>
-          <el-button type="text" size="small" icon="el-icon-delete" style="color: red;" @click="handleDelete([scope.row.id])">
-            删除</el-button>
+          <el-button
+            size="mini"
+            type="primary"
+            icon="el-icon-edit" plain
+            @click="handleEdit(scope.row)"
+          >
+            Edit
+          </el-button>
+          <el-button
+            size="mini"
+            type="danger"
+            icon="el-icon-delete" plain
+            @click="handleDelete([scope.row.id])"
+          >
+            Delete</el-button
+          >
         </template>
       </el-table-column>
     </el-table>
 
-      <!-- 操作列
+    <!-- 分页 -->
+    <el-pagination
+      class="pagination"
+      :current-page.sync="tableData.pageNum"
+      :page-sizes="[10, 20, 30, 40]"
+      :page-size.sync="tableData.pageSize"
+      layout="total, sizes, prev, pager, next, jumper"
+      :total="tableData.total"
+      @size-change="getUserList"
+      @current-change="getUserList"
+    />
+    <!-- 操作列
       <el-table-column label="操作" width="200">
         <template slot-scope="scope">
           <el-button size="mini" type="primary" @click="handleEdit(scope.row)">
@@ -86,7 +162,7 @@
     <!-- <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" /> -->
 
     <!-- add / edit 对话框 -->
-    <el-dialog
+    <!-- <el-dialog
       :title="textMap[dialogStatus]"
       :visible.sync="addDialogFormVisible"
     >
@@ -115,6 +191,74 @@
           Confirm
         </el-button>
       </div>
+    </el-dialog> -->
+
+    <!-- 用户编辑/创建窗口 -->
+    <el-dialog
+      class="user-edit-dialog"
+      :title="textMap[dialogStatus]"
+      :visible.sync="addDialogFormVisible"
+      width="50%"
+      top="8vh"
+    >
+      <el-form
+        ref="userEditForm"
+        status-icon
+        :model="userEditForm"
+        label-width="80px"
+        :rules="userEditForm.id ? userUpdateRules : userCreateRules"
+      >
+        <el-form-item label="用户名" prop="userName">
+          <el-input v-model="userEditForm.userName" />
+        </el-form-item>
+        <el-form-item label="真实姓名">
+          <el-input v-model="userEditForm.trueName" />
+        </el-form-item>
+        <el-form-item label="密码" prop="password">
+          <el-input v-model="userEditForm.password" />
+        </el-form-item>
+        <el-form-item label="邮箱" prop="email">
+          <el-input v-model="userEditForm.email" />
+        </el-form-item>
+        <el-form-item label="性别">
+          <el-radio-group v-model="userEditForm.gender">
+            <el-radio :label="0">男</el-radio>
+            <el-radio :label="1">女</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="地址">
+          <el-input v-model="userEditForm.address" />
+        </el-form-item>
+        <el-form-item label="简介">
+          <el-input v-model="userEditForm.introduction" />
+        </el-form-item>
+        <el-form-item label="电话">
+          <el-input v-model="userEditForm.phone" />
+        </el-form-item>
+        <el-form-item label="角色" prop="roleIds">
+          <el-select
+            v-model="userEditForm.roleIds"
+            multiple
+            placeholder="请选择角色"
+          >
+            <el-option
+              v-for="role in allRoles"
+              :key="role.id"
+              :label="role.name"
+              :value="role.id"
+            />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="addDialogFormVisible = false">取 消</el-button>
+        <el-button
+          type="primary"
+          @click="dialogStatus === 'add' ? addData() : editData()"
+        >
+          确定
+        </el-button>
+      </span>
     </el-dialog>
   </div>
 </template>
@@ -140,12 +284,12 @@ export default {
         total: 0,
         pageNum: 1,
         pageSize: 10,
-        userName: '',
-        minCreateTime: '',
-        maxCreateTime: '',
-        orderBy: '',
-        orderMethod: 'asc',
-        selection: []
+        userName: "",
+        minCreateTime: "",
+        maxCreateTime: "",
+        orderBy: "",
+        orderMethod: "asc",
+        selection: [],
       },
 
       //筛选条件
@@ -162,20 +306,69 @@ export default {
       total: 0,
 
       //add edit  Dialog
+      userEditForm: {
+        id: "",
+        userName: "",
+        trueName: "",
+        password: "",
+        email: "",
+        gender: "",
+        address: "",
+        introduction: "",
+        phone: "",
+        roleIds: [],
+      },
+      userCreateRules: {
+        userName: [
+          {
+            required: true,
+            trigger: "blur",
+            validator: this.userNameValidator,
+          },
+        ],
+        password: [
+          {
+            required: true,
+            trigger: "change",
+            validator: this.passwordValidator,
+          },
+        ],
+        roleIds: [
+          { required: true, trigger: "change", validator: this.roleValidator },
+        ],
+      },
+      userUpdateRules: {
+        userName: [
+          {
+            required: true,
+            trigger: "blur",
+            validator: this.userNameValidator,
+          },
+        ],
+        password: [{ trigger: "change", validator: this.passwordValidator }],
+        roleIds: [
+          { required: true, trigger: "change", validator: this.roleValidator },
+        ],
+      },
+      currentEditRow: {},
+      allRoles: [],
+
+      //dialog title
       addDialogFormVisible: false,
       dialogStatus: "", // 'add' or 'edit'
+      textMap: {
+        add: "新增用户",
+        edit: "修改用户信息",
+      },
       addTemp: {},
       addRules: {},
       addColumns: [],
-      textMap: {
-        add: "新增表格内容",
-        edit: "修改表格内容",
-      },
+
       editId: "",
     };
   },
   created() {
-    this.fetchTableData();
+    this.getUserList();
   },
   computed: {
     filteredColumns() {
@@ -183,44 +376,54 @@ export default {
     },
   },
   methods: {
-    handleFilter() {
-      this.fetchTableData(this.listQuery.tableName);
-    },
-    tableReset() {
-      axios
-        .get("/api/tables")
-        .then((response) => {
-          this.showTableOptions = response.data.map((tableName) => ({
-            value: tableName,
-            label: tableName,
-          }));
-
-          //默认第一个表格内容初始化页面
-          if (this.showTableOptions.length > 0) {
-            this.showTableName = this.showTableOptions[0].value;
-            this.fetchTableData(this.showTableName);
-          }
-        })
-        .catch((error) => {
-          console.error("Error fetching tables:", error);
+    userNameValidator(rule, value, callback) {
+      if (!value) {
+        callback(new Error("请输入用户名"));
+      } else if (
+        this.userEditForm.id &&
+        value === this.currentEditRow.userName
+      ) {
+        callback();
+      } else {
+        checkUserName(value).then((res) => {
+          callback(res.data.data ? new Error("用户名已存在") : undefined);
         });
+      }
     },
-    fetchTableData() {
-   
-
+    passwordValidator(rule, value, callback) {
+      if (!value && this.userEditForm.id) {
+        callback();
+      } else if (!value || value.length < 6) {
+        callback(new Error("密码长度不能小于6位"));
+      } else {
+        callback();
+      }
+    },
+    roleValidator(rule, value, callback) {
+      if (!value || value.length === 0) {
+        callback(new Error("角色不能为空"));
+      } else {
+        callback();
+      }
+    },
+    resetQuery() {
+      this.tableData.userName = "";
+      this.tableData.minCreateTime = "";
+      this.tableData.maxCreateTime = "";
+    },
+    getUserList() {
       this.listLoading = true;
 
       console.log("waiting...");
       const params = {
-        searchContent: "",
-        pageNum: 1,
-        pageSize: 5,
+        searchContent: this.tableData.userName,
+        pageNum: this.tableData.pageNum, // 使用当前的 pageNum
+        pageSize: this.tableData.pageSize, // 使用当前的 pageSize
       };
       axios
-      .get(`/api/users/getUserList`, { params })
+        .get(`/api/users/getUserList`, { params })
         .then((response) => {
-          console.log(response.data.data);
-         this.tableData.list=response.data.data
+          this.tableData.list = response.data.data;
           this.listLoading = false;
         })
         .catch((error) => {
@@ -228,200 +431,31 @@ export default {
           this.listLoading = false;
         });
     },
-    sortChange(data) {
-      const { prop, order } = data;
-      // if (prop === 'id') {
-      //   this.sortByID(order)
-      // }
-    },
-    createTable() {
-      this.listLoading = true;
-
-      // const payload = {
-      //   tableA: "关联测试",
-      //   tableB: "南开大学-专利0517",
-      //   newTable: "专利-关联",
-      //   columnsA: ["序号", "状态", "描述"],
-      //   columnsB: ["申请号", "专利名称"],
-      //   joinColumn: "序号",
-      // };
-      const formData = new FormData();
-      formData.append("tableA", this.temp.tableA);
-      formData.append("tableB", this.temp.tableB);
-      formData.append("newTable", this.temp.newTable);
-
-      this.temp.columnsA.forEach((column) => {
-        formData.append("columnsA[]", column);
+    handleSwitch(row) {
+      UserApi.changeUserStatus(row.id, row.status).then(() => {
+        this.$message.success("操作成功");
       });
-
-      this.temp.columnsB.forEach((column) => {
-        formData.append("columnsB[]", column);
-      });
-
-      formData.append("joinColumn", this.temp.joinColumn);
-
-      axios
-        .post("/api/table/create", formData)
-        .then((response) => {
-          this.showTableName = this.temp.newTable;
-          this.showTableColumns = response.data.columns;
-          this.showTableList = response.data.data;
-          this.listLoading = false;
-        })
-        .catch((error) => {
-          console.error(error);
-          this.listLoading = false;
-        });
     },
+    handleSortChange({ column, prop, order }) {
+      this.tableData.orderBy = prop;
+      this.tableData.orderMethod = order === "ascending" ? "asc" : "desc";
+      this.getUserList();
+    },
+
     resetTemp() {
-      this.temp = {
-        tableA: "",
-        tableB: "",
-        newTable: "",
-        columnsA: [],
-        columnsB: [],
-        joinColumn: "",
-      };
-      this.tableOptions = [];
-      this.ColumnAoptions = [];
-      this.ColumnBoptions = [];
-    },
-    resetaddTemp() {
-      //重置add表格的内容（清空）
-      this.addTemp = {};
-    },
-    handleCreate() {
-      this.resetTemp(); // 重置表单数据
-      this.dialogStatus = "create";
-      this.createDialogFormVisible = true;
-      this.$nextTick(() => {
-        this.$refs["dataForm"].clearValidate(); // 清空表单验证状态
-      });
-      axios
-        .get("/api/tables")
-        .then((response) => {
-          this.tableOptions = response.data.map((tableName) => ({
-            value: tableName,
-            label: tableName,
-            disabled: false,
-          }));
-        })
-        .catch((error) => {
-          console.error("Error fetching tables:", error);
-        });
-    },
-
-    fetchColumns(tableType) {
-      let tableName = tableType === "A" ? this.temp.tableA : this.temp.tableB;
-      if (tableName) {
-        axios
-          .get(`/api/columns/${tableName}`)
-          .then((response) => {
-            const columns = response.data.map((column) => ({
-              value: column,
-              label: column,
-              disabled: false,
-            }));
-            if (tableType === "A") {
-              this.ColumnAoptions = columns;
-              //清空合并列、表格A选择
-              this.temp.joinColumn = "";
-              this.temp.columnsA = [];
-            } else {
-              this.ColumnBoptions = columns;
-              this.temp.columnsB = [];
-              //如果合并列不为空，更新ColumnBoptions中的 disabled 属性
-              const joinColumnValue = this.temp.joinColumn;
-              if (joinColumnValue !== "") {
-                this.ColumnBoptions.forEach((item) => {
-                  if (item.value === joinColumnValue) {
-                    item.disabled = true;
-                  } else {
-                    item.disabled = false;
-                  }
-                });
-              }
-            }
-            // 更新 tableOptions 中的 disabled 属性
-            this.tableOptions.forEach((option) => {
-              option.disabled =
-                option.value === this.temp.tableA ||
-                option.value === this.temp.tableB;
-            });
-          })
-
-          .catch((error) => {
-            console.error(`Error fetching columns for ${tableName}:`, error);
-          });
+      //重置dialog
+      for (const key in this.userEditForm) {
+        this.userEditForm[key] = "";
       }
+      this.userEditForm.roleIds = [];
     },
-    handleJoinColumnChange() {
-      // 清空表格A和表格B的关联列
-      this.temp.columnsA = [];
-      this.temp.columnsB = [];
-      // 禁用同名列选项
-      const joinColumnValue = this.temp.joinColumn;
-      if (joinColumnValue !== "") {
-        this.ColumnAoptions.forEach((item) => {
-          if (item.value === joinColumnValue) {
-            item.disabled = true;
-          } else {
-            item.disabled = false;
-          }
-        });
 
-        this.ColumnBoptions.forEach((item) => {
-          if (item.value === joinColumnValue) {
-            item.disabled = true;
-          } else {
-            item.disabled = false;
-          }
-        });
-      } else {
-        // 如果没有选择合并列，则重置所有列的 disabled 属性
-        this.ColumnAoptions.forEach((item) => {
-          item.disabled = false;
-        });
-
-        this.ColumnBoptions.forEach((item) => {
-          item.disabled = false;
-        });
-      }
-    },
-    createData() {
-      this.$refs["dataForm"].validate((valid) => {
-        if (valid) {
-          // 先验证表格名不重复等
-          const exists = this.tableOptions.some(
-            (option) => option.value === this.temp.newTable
-          );
-          if (exists) {
-            this.$message.error("表格名已存在，请输入不同的表格名称。");
-          } else {
-            // 验证 ColumnBoptions 是否存在 joinColumn
-            const joinColumnExists = this.ColumnBoptions.some(
-              (option) => option.value === this.temp.joinColumn
-            );
-            if (!joinColumnExists) {
-              this.$message.error(
-                "表格B关联列中不存在选定的合并列，请重新选择。"
-              );
-            } else {
-              this.createTable();
-              this.createDialogFormVisible = false;
-            }
-          }
-        } else {
-          // 验证不通过的处理逻辑，例如给出错误提示
-        }
-      });
-    },
     handleAdd() {
-      this.resetaddTemp(); // 重置表单数据
+      this.resetTemp(); // 重置表单数据
       this.dialogStatus = "add";
       this.addDialogFormVisible = true;
       this.$nextTick(() => {
-        this.$refs["addDataForm"].clearValidate(); // 清空表单验证状态
+        this.$refs["userEditForm"].clearValidate(); // 清空表单验证状态
       });
     },
     addData() {
@@ -477,6 +511,14 @@ export default {
           this.addDialogFormVisible = false;
         });
     },
+    handleBatchDelete() {
+      if (this.tableData.selection.length === 0) {
+        this.$message.warning('请选择要删除的用户')
+        return
+      }
+      const userIds = this.tableData.selection.map(item => item.id)
+      this.handleDelete(userIds)
+    },
     handleDelete(row) {
       this.$confirm("确定要删除这一行吗？", "警告", {
         confirmButtonText: "删除",
@@ -503,21 +545,16 @@ export default {
           this.$message.info("已取消删除");
         });
     },
-    handleSwitch(){
-
-    }
+    handleSwitch() {},
   },
 };
 </script>
 
 <style lang="scss" scoped>
-.dashboard {
-  &-container {
-    margin: 30px;
-  }
-  &-text {
-    font-size: 30px;
-    line-height: 46px;
-  }
+.user-container {
+  margin: 10px;
+}
+.filter-container {
+  margin-top: 30px;
 }
 </style>
