@@ -9,5 +9,5 @@ import java.util.Map;
 public interface UserRoleService extends IService<UserRole> {
 
 
-
+    void addUserRole(Long userId, List<Integer> roleIdList, boolean deleteOldRole);
 }

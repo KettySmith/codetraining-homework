@@ -71,31 +71,31 @@ public class UserUtils {
         }
     }
 
-    /**
-     * 更新用户头像
-     *
-     * @param user   用户
-     * @param avatar 头像
-     */
-    public static boolean updateUserAvatar(User user, MultipartFile avatar) {
-        if (avatar == null) {
-            return false;
-        }
-        // 获取头像后缀
-        String suffix = Objects.requireNonNull(avatar.getOriginalFilename()).substring(avatar.getOriginalFilename().lastIndexOf("."));
-        // 如果之前路径存在则删除
-        String avatarName = user.generateAvatarName(suffix);
-        if (!avatarName.equals(user.getAvatarPath())) {
-            if (user.getAvatarPath() != null) {
-                if (!FileUtils.deleteFileOrDirectory(StorageEnum.USER_AVATAR_PATH.getDesc() + user.getAvatarPath())) {
-                    return false;
-                }
-            }
-            user.setAvatarPath(avatarName);
-            instance.userService.updateById(user);
-        }
-        return FileUtils.createOrUpdateMultipartFile(StorageEnum.USER_AVATAR_PATH.getDesc(), avatarName, avatar);
-    }
+//    /**
+//     * 更新用户头像
+//     *
+//     * @param user   用户
+//     * @param avatar 头像
+//     */
+//    public static boolean updateUserAvatar(User user, MultipartFile avatar) {
+//        if (avatar == null) {
+//            return false;
+//        }
+//        // 获取头像后缀
+//        String suffix = Objects.requireNonNull(avatar.getOriginalFilename()).substring(avatar.getOriginalFilename().lastIndexOf("."));
+//        // 如果之前路径存在则删除
+//        String avatarName = user.generateAvatarName(suffix);
+//        if (!avatarName.equals(user.getAvatarPath())) {
+//            if (user.getAvatarPath() != null) {
+//                if (!FileUtils.deleteFileOrDirectory(StorageEnum.USER_AVATAR_PATH.getDesc() + user.getAvatarPath())) {
+//                    return false;
+//                }
+//            }
+//            user.setAvatarPath(avatarName);
+//            instance.userService.updateById(user);
+//        }
+//        return FileUtils.createOrUpdateMultipartFile(StorageEnum.USER_AVATAR_PATH.getDesc(), avatarName, avatar);
+//    }
 
     /**
      * 处理用户登录

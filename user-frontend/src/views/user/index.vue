@@ -119,7 +119,8 @@
           <el-button
             size="mini"
             type="primary"
-            icon="el-icon-edit" plain
+            icon="el-icon-edit"
+            plain
             @click="handleEdit(scope.row)"
           >
             Edit
@@ -127,7 +128,8 @@
           <el-button
             size="mini"
             type="danger"
-            icon="el-icon-delete" plain
+            icon="el-icon-delete"
+            plain
             @click="handleDelete([scope.row.id])"
           >
             Delete</el-button
@@ -164,7 +166,7 @@
     <!-- add / edit 对话框 -->
     <!-- <el-dialog
       :title="textMap[dialogStatus]"
-      :visible.sync="addDialogFormVisible"
+      :visible.sync="userEditDialogVisible"
     >
       <el-form
         ref="addDataForm"
@@ -183,7 +185,7 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="addDialogFormVisible = false"> Cancel </el-button>
+        <el-button @click="userEditDialogVisible = false"> Cancel </el-button>
         <el-button
           type="primary"
           @click="dialogStatus === 'add' ? addData() : editData()"
@@ -197,7 +199,7 @@
     <el-dialog
       class="user-edit-dialog"
       :title="textMap[dialogStatus]"
-      :visible.sync="addDialogFormVisible"
+      :visible.sync="userEditDialogVisible"
       width="50%"
       top="8vh"
     >
@@ -251,13 +253,8 @@
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="addDialogFormVisible = false">取 消</el-button>
-        <el-button
-          type="primary"
-          @click="dialogStatus === 'add' ? addData() : editData()"
-        >
-          确定
-        </el-button>
+        <el-button @click="userEditDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="addOrUpdateUser"> 确定 </el-button>
       </span>
     </el-dialog>
   </div>
@@ -265,9 +262,16 @@
 
 <script>
 import { mapGetters } from "vuex";
+import md5 from "js-md5";
+
 import { parseTime } from "@/utils";
 import Pagination from "@/components/Pagination"; // secondary package based on el-pagination
+import LoadingUtils from "@/utils/loading-utils";
+import { checkUserName } from "@/api/auth";
+import * as UserApi from "@/api/user";
+
 import axios from "axios";
+const copyObject = (obj) => JSON.parse(JSON.stringify(obj));
 
 export default {
   name: "User",
@@ -354,7 +358,7 @@ export default {
       allRoles: [],
 
       //dialog title
-      addDialogFormVisible: false,
+      userEditDialogVisible: false,
       dialogStatus: "", // 'add' or 'edit'
       textMap: {
         add: "新增用户",
@@ -368,8 +372,8 @@ export default {
     };
   },
   mounted() {
-    this.getAllRoles()
-    this.getUserList()
+    this.getAllRoles();
+    this.getUserList();
   },
   computed: {
     filteredColumns() {
@@ -388,7 +392,9 @@ export default {
         callback();
       } else {
         checkUserName(value).then((res) => {
-          callback(res.data.data ? new Error("用户名已存在") : undefined);
+          console.log("checkName:")
+          console.log(res.data)
+          callback(res.data ? new Error("用户名已存在") : undefined);
         });
       }
     },
@@ -414,16 +420,12 @@ export default {
       this.tableData.maxCreateTime = "";
     },
 
-
     //方法
     getAllRoles() {
-      axios
-        .get(`/api/roles/getRoles`)
-      .then(res => {
-        this.allRoles = res.data.data
-      })
+      axios.get(`/api/roles/getRoles`).then((res) => {
+        this.allRoles = res.data.data;
+      });
     },
-
 
     getUserList() {
       this.listLoading = true;
@@ -446,9 +448,9 @@ export default {
         });
     },
     handleSwitch(row) {
-      UserApi.changeUserStatus(row.id, row.status).then(() => {
-        this.$message.success("操作成功");
-      });
+      // UserApi.changeUserStatus(row.id, row.status).then(() => {
+      //   this.$message.success("操作成功");
+      // });
     },
     handleSortChange({ column, prop, order }) {
       this.tableData.orderBy = prop;
@@ -467,97 +469,67 @@ export default {
     handleAdd() {
       this.resetTemp(); // 重置表单数据
       this.dialogStatus = "add";
-      this.addDialogFormVisible = true;
+      this.userEditDialogVisible = true;
       this.$nextTick(() => {
         this.$refs["userEditForm"].clearValidate(); // 清空表单验证状态
       });
     },
-    addData() {
-    this.$refs.userEditForm.validate((valid) => {
-      if (valid) {
-        // 如果表单验证通过
-        const params = {
-          userName: this.userEditForm.userName,
-          trueName: this.userEditForm.trueName,
-          password: this.userEditForm.password,
-          email: this.userEditForm.email,
-          gender: this.userEditForm.gender,
-          address: this.userEditForm.address,
-          introduction: this.userEditForm.introduction,
-          phone: this.userEditForm.phone,
-          roleIds: this.userEditForm.roleIds,
-        };
+    // .post("/api/users/addUser", {}, { params: urlParams })
 
-        axios
-          .post('/api/users/addUser',  { params })
-          .then((response) => {
-            if (response.data.success) {
-              this.$message({
-                message: '用户添加成功',
-                type: 'success',
-              });
-              this.addDialogFormVisible = false; // 关闭对话框
-              this.getUserList(); // 刷新用户列表
-            } else {
-              this.$message({
-                message: '用户添加失败: ' + response.data.message,
-                type: 'error',
-              });
+    addOrUpdateUser() {
+      this.$refs.userEditForm.validate((valid) => {
+        if (valid) {
+          const params = copyObject(this.userEditForm);
 
-            }
-          })
-          .catch((error) => {
-            console.error('添加用户时出错:', error);
-            this.$message({
-              message: '添加用户时出错，请稍后重试',
-              type: 'error',
+          if (!params.password) {
+            delete params.password;
+          } else {
+            params.password = md5(params.password);
+          }
+          const urlParams = new URLSearchParams(params);
+
+          LoadingUtils.createFullScreenLoading("正在保存...");
+          var url;
+          if(this.userEditForm.id){
+            url="/api/users/updateUser"
+          }else{
+            url="/api/users/addUser"
+          }
+          
+          axios.post("/api/users/addUser", {}, { params: urlParams })
+            .then((res) => {
+              this.$message.success("操作成功");
+              if (!this.userEditForm.id) {
+                this.userEditForm.id = res.data.data.id;
+              }
+              this.getUserList();
+            })
+            .finally(() => {
+              this.userEditDialogVisible = false;
+              LoadingUtils.closeFullScreenLoading();
             });
-          });
-      } else {
-        console.log('表单验证失败');
-        return false;
-      }
-    });
-  },
- 
+        }
+      });
+    },
+
     handleEdit(row) {
       console.log(row);
       this.dialogStatus = "edit";
       this.addTemp = { ...row };
       this.editId = row.id;
-      this.addDialogFormVisible = true;
+      this.userEditDialogVisible = true;
       this.$nextTick(() => {
         this.$refs["addDataForm"].clearValidate(); // 清空表单验证状态
       });
     },
-    editData() {
-      const columns = this.filteredColumns.map((column) => ({
-        name: column,
-        value: this.addTemp[column] || "", // 如果没有填写内容，则设置为''
-      }));
-      const formData = new FormData();
-      formData.append("tableName", this.showTableName);
-      formData.append("id", this.editId);
-      formData.append("columns", JSON.stringify(columns));
-      axios
-        .post("/api/table/update", formData)
-        .then((response) => {
-          this.$message.success("更新成功");
-          this.fetchTableData(this.showTableName);
-          this.addDialogFormVisible = false;
-        })
-        .catch((error) => {
-          console.error(error);
-          this.addDialogFormVisible = false;
-        });
-    },
+
     handleBatchDelete() {
       if (this.tableData.selection.length === 0) {
-        this.$message.warning('请选择要删除的用户')
-        return
+        this.$message.warning("请选择要删除的用户");
+        return;
       }
-      const userIds = this.tableData.selection.map(item => item.id)
-      this.handleDelete(userIds)
+      const userIds = this.tableData.selection.map((item) => item.id);
+      this.handleDelete(userIds);
     },
     handleDelete(row) {
       this.$confirm("确定要删除这一行吗？", "警告", {

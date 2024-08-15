@@ -31,8 +31,7 @@ public class User implements Serializable {
     // 密码
     @JsonIgnore
     private String password;
-    // 头像路径
-    private String avatarPath;
+
     // 电话
     private String phone;
     // 邮箱

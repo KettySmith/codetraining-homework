@@ -48,4 +48,45 @@ public interface UserMapper extends BaseMapper<User> {
                                           @Param("pageNum")Integer pageNum,
                                           @Param("pageSize")  Integer pageSize);
 
+    @Select("")
+    void addUser(@Param("userName") String userName,
+                 @Param("trueName") String trueName,
+                 @Param("password") String password,
+                 @Param("email") String email,
+                 @Param("gender") Integer gender,
+                 @Param("address") String address,
+                 @Param("introduction") String introduction,
+                 @Param("phone") String phone,
+                 @Param("roleIds") List<Integer> roleIds);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }

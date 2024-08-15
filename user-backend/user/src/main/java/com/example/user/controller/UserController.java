@@ -18,6 +18,7 @@ import com.example.user.utils.DataUtils;
 import com.example.user.utils.UserUtils;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -73,17 +74,47 @@ public class UserController {
 
     @ApiOperation(value = "添加用户", notes = "添加用户")
     @ApiImplicitParams({
-            @ApiImplicitParam(paramType = "query", name = "searchContent", value = "检索关键词", dataType = "String"),
-            @ApiImplicitParam(paramType = "query", name = "pageNum", value = "页码", dataType = "int"),
-            @ApiImplicitParam(paramType = "query", name = "pageSize", value = "单页元素数目", dataType = "int")
+            @ApiImplicitParam(paramType = "query", name = "userName", value = "用户名", dataType = "String", required = true),
+            @ApiImplicitParam(paramType = "query", name = "trueName", value = "真实姓名", dataType = "String"),
+            @ApiImplicitParam(paramType = "query", name = "password", value = "密码", dataType = "String", required = true),
+            @ApiImplicitParam(paramType = "query", name = "email", value = "邮箱", dataType = "String"),
+            @ApiImplicitParam(paramType = "query", name = "gender", value = "性别（0: 男, 1: 女）", dataType = "int"),
+            @ApiImplicitParam(paramType = "query", name = "address", value = "地址", dataType = "String"),
+            @ApiImplicitParam(paramType = "query", name = "introduction", value = "简介", dataType = "String"),
+            @ApiImplicitParam(paramType = "query", name = "phone", value = "电话", dataType = "String"),
+            @ApiImplicitParam(paramType = "query", name = "roleIds", value = "角色ID列表", dataType = "List<Integer>")
     })
-    @GetMapping(value = "/addUser")
-    public ResponseVO<List<Map<String, Object>>> addUser(@RequestParam(value = "searchContent",required = false,defaultValue = "")String searchContent,
-                                                             @RequestParam(value = "pageNum",required = false)Integer pageNum,
-                                                             @RequestParam(value = "pageSize",required = false)Integer pageSize) {
+    @PostMapping(value = "/addUser")
+    public ResponseVO<User> addUser(@RequestParam(value = "userName") String userName,
+                                    @RequestParam(value = "trueName", required = false,defaultValue = "") String trueName,
+                                    @RequestParam(value = "password") String password,
+                                    @RequestParam(value = "email", required = false,defaultValue = "") String email,
+                                    @RequestParam(value = "gender", required = false,defaultValue = "") Integer gender,
+                                    @RequestParam(value = "address", required = false,defaultValue = "") String address,
+                                    @RequestParam(value = "introduction", required = false,defaultValue = "") String introduction,
+                                    @RequestParam(value = "phone", required = false,defaultValue = "") String phone,
+                                    @RequestParam(value = "roleIds", required = false) List<Integer> roleIds) {
 
-        return ResponseVO.success(userService.addUser(searchContent,pageNum,pageSize));
+        User user;
+        try {
+            System.out.println("@@@"+userName);
+
+            user = userService.addUser(userName, trueName, password, email, gender, address, introduction, phone, roleIds);
+            return ResponseVO.success(user);
+
+        } catch (CustomRuntimeException e) {
+            return ResponseVO.error(e.getStatusCode());
+        }
 
     }
+
+//    @PostMapping(value="/addUser")
+//    @ApiOperation(value = "添加用户")
+//    public ResponseVO<User> addUser(@RequestBody UserDTO userInfo) {
+//
+//        return ResponseVO.success();
+//    }
+
+
 
 }
