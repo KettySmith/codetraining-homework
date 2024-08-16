@@ -69,18 +69,18 @@ export const constantRoutes = [
     ]
   },
 
-  {
-    path: '/permission',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        name: 'Permission',
-        component: () => import('@/views/permission/index'),
-        meta: { title: 'Permission', icon: 'el-icon-info' }
-      }
-    ]
-  },
+  // {
+  //   path: '/permission',
+  //   component: Layout,
+  //   children: [
+  //     {
+  //       path: 'index',
+  //       name: 'Permission',
+  //       component: () => import('@/views/permission/index'),
+  //       meta: { title: 'Permission', icon: 'el-icon-info' }
+  //     }
+  //   ]
+  // },
 
   
 

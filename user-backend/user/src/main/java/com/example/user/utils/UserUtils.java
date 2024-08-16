@@ -102,12 +102,9 @@ public class UserUtils {
      *
      * @param user       用户
      * @param password   密码
-     * @param platformId 系统id
      */
-    public static ResponseVO<Map<String, Object>> handleUserLogin(User user, String password, Integer platformId) {
-        if (PlatformEnum.getNameById(platformId) == null) {
-            return ResponseVO.error(StatusEnum.PLATFORM_NOT_EXISTS);
-        }
+    public static ResponseVO<Map<String, Object>> handleUserLogin(User user, String password) {
+
         if (!User.Status.ENABLE.equals(user.getStatus())) {
             return ResponseVO.error(StatusEnum.USER_DISABLED);
         }
@@ -115,17 +112,25 @@ public class UserUtils {
             return ResponseVO.error(StatusEnum.PASSWORD_ERROR);
         }
         List<Map<String, Object>> roleAndPermissionInfo = instance.userService.getUserRoleAndPermissionsByUserId(Collections.singletonList(user.getId()));
-        setUserRoleAndPermissionInfo(user, roleAndPermissionInfo);
-        String roleNameList = String.join(",", user.getRoleList());
-        String permissionCodeList = String.join(",", user.getPermissionList());
-        if (!checkUserHasPermissionForPlatform(roleAndPermissionInfo, platformId)) {
+        System.out.println(("@@@"+roleAndPermissionInfo));
+        Map<String, Object> tempInfo = roleAndPermissionInfo.get(0);
+        String platformList = (String) tempInfo.get("platformList");
+        if ( !Arrays.asList(platformList.split(",")).contains("2")) {
             return ResponseVO.error(StatusEnum.PERMISSION_DENIED_FOR_PLATFORM);
         }
-        String ip = ServletUtils.getRequest().getHeader("X-Real-IP");
-        instance.loginLogService.save(new LoginLog(user.getId(), ip, new Date(), platformId));
+
+
+
+//        setUserRoleAndPermissionInfo(user, roleAndPermissionInfo);
+//        String roleNameList = String.join(",", user.getRoleList());
+//        String permissionCodeList = String.join(",", user.getPermissionList());
+//        if (!checkUserHasPermissionForPlatform(roleAndPermissionInfo, platformId)) {
+//            return ResponseVO.error(StatusEnum.PERMISSION_DENIED_FOR_PLATFORM);
+//        }
+
         Map<String, Object> returnMap = new HashMap<>();
         returnMap.put("user", user);
-        ServletUtils.setTokenData(user.getId(), user.getUserName(), roleNameList, permissionCodeList);
+//        ServletUtils.setTokenData(user.getId(), user.getUserName(), roleNameList, permissionCodeList);
         return ResponseVO.success(returnMap);
     }
 
