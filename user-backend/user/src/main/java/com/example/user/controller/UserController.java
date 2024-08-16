@@ -11,6 +11,7 @@ import com.example.user.constant.ApiConstants;
 import com.example.user.dto.UserDTO;
 import com.example.user.dto.UserSelfDTO;
 import com.example.user.entity.User;
+import com.example.user.entity.UserRole;
 import com.example.user.enums.StatusEnum;
 import com.example.user.service.UserRoleService;
 import com.example.user.service.UserService;
@@ -107,6 +108,23 @@ public class UserController {
 
     }
 
+    /**
+     * Created on 2024/8/16
+     * Description:
+     *
+     * @param id
+     * @param userName
+     * @param trueName
+     * @param password
+     * @param email
+     * @param gender
+     * @param address
+     * @param introduction
+     * @param phone
+     * @param roleIds
+     * @return ResponseVO<String>
+     * @author wangjiahui
+     */
     @ApiOperation(value = "更新用户信息", notes = "更新用户信息")
     @ApiImplicitParams({
             @ApiImplicitParam(paramType = "query", name = "id", value = "用户id", dataType = "Long", required = true),
@@ -156,4 +174,24 @@ public class UserController {
         return ResponseVO.success("更新成功");
     }
 
+
+    @PostMapping(value = "/deleteUser")
+    @Transactional(rollbackFor = Exception.class)
+    public ResponseVO<String> deleteUsers(@RequestParam @ApiParam(value = "用户id列表") List<Long> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return ResponseVO.error(CommonStatusEnum.BAD_REQUEST);
+        }
+        // 采用逻辑删除而非物理删除
+//        List<User> userList = (List<User>) userService.listByIds(userIds);
+//        userList.forEach(user -> user.setStatus(User.Status.DELETED));
+//        userService.updateBatchById(userList);
+        //物理删除
+        //删除用户角色关联关系
+        userRoleService.remove(new QueryWrapper<UserRole>().in("user_id", userIds));
+
+        //删除用户
+        userService.removeByIds(userIds);
+
+        return ResponseVO.success();
+    }
 }

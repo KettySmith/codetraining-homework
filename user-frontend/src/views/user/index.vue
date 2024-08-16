@@ -16,7 +16,7 @@
             @keyup.enter.native="getUserList"
           />
         </el-form-item>
-        <el-form-item label="创建时间">
+        <!-- <el-form-item label="创建时间">
           <el-date-picker
             v-model="tableData.minCreateTime"
             class="date-picker"
@@ -31,7 +31,7 @@
             type="datetime"
             placeholder="截止日期"
           />
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item>
           <el-button
             type="primary"
@@ -149,52 +149,7 @@
       @size-change="getUserList"
       @current-change="getUserList"
     />
-    <!-- 操作列
-      <el-table-column label="操作" width="200">
-        <template slot-scope="scope">
-          <el-button size="mini" type="primary" @click="handleEdit(scope.row)">
-            Edit
-          </el-button>
-          <el-button size="mini" type="danger" @click="handleDelete(scope.row)">
-            Delete
-          </el-button>
-        </template>
-      </el-table-column> -->
-
-    <!-- <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" /> -->
-
-    <!-- add / edit 对话框 -->
-    <!-- <el-dialog
-      :title="textMap[dialogStatus]"
-      :visible.sync="userEditDialogVisible"
-    >
-      <el-form
-        ref="addDataForm"
-        :rules="addRules"
-        :model="addTemp"
-        label-position="left"
-        label-width="120px"
-        style="width: 400px; margin-left: 50px"
-      >
-        <el-form-item
-          v-for="column in filteredColumns"
-          :key="column"
-          :label="column"
-        >
-          <el-input v-model="addTemp[column]"></el-input>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="userEditDialogVisible = false"> Cancel </el-button>
-        <el-button
-          type="primary"
-          @click="dialogStatus === 'add' ? addData() : editData()"
-        >
-          Confirm
-        </el-button>
-      </div>
-    </el-dialog> -->
-
+   
     <!-- 用户编辑/创建窗口 -->
     <el-dialog
       class="user-edit-dialog"
@@ -391,10 +346,7 @@ export default {
       ) {
         callback();
       } else {
-       
-      
         checkUserName(value).then((res) => {
-          
           callback(res.data ? new Error("用户名已存在") : undefined);
         });
       }
@@ -480,7 +432,6 @@ export default {
     // .post("/api/users/addUser", {}, { params: urlParams })
 
     addOrUpdateUser() {
-     
       this.$refs.userEditForm.validate((valid) => {
         if (valid) {
           const params = copyObject(this.userEditForm);
@@ -497,13 +448,12 @@ export default {
           if (this.userEditForm.id) {
             url = "/api/users/updateUser";
           } else {
-            
             url = "/api/users/addUser";
           }
-          console.log("this.userEditForm.id:")
-      console.log(this.userEditForm.id)
-      console.log("params:")
-      console.log(params)
+          console.log("this.userEditForm.id:");
+          console.log(this.userEditForm.id);
+          console.log("params:");
+          console.log(params);
           axios
             .post(url, {}, { params: urlParams })
             .then((res) => {
@@ -524,7 +474,7 @@ export default {
     handleEdit(row) {
       console.log("row:");
       console.log(row);
-      this.currentEditRow = row
+      this.currentEditRow = row;
 
       for (const key in this.userEditForm) {
         this.userEditForm[key] = row[key];
@@ -558,26 +508,29 @@ export default {
       const userIds = this.tableData.selection.map((item) => item.id);
       this.handleDelete(userIds);
     },
-    handleDelete(row) {
+    handleDelete(userIds) {
       this.$confirm("确定要删除这一行吗？", "警告", {
         confirmButtonText: "删除",
         cancelButtonText: "取消",
         type: "warning",
       })
         .then(() => {
-          const formData = new FormData();
-          formData.append("tableName", this.showTableName);
-          formData.append("row_id", row.id);
-
+          LoadingUtils.createFullScreenLoading("正在删除...");
+          const params = new URLSearchParams();
+          userIds.forEach((id) => params.append("userIds", id));
+          console.log(params)
           axios
-            .post("/api/table/delete", formData) // 假设 'id' 是唯一标识符
+            .post("/api/users/deleteUser", {}, {params }) // 假设 'id' 是唯一标识符
             .then((response) => {
               this.$message.success("删除成功");
-              this.fetchTableData(this.showTableName); // 刷新表格数据
+              this.getUserList();
             })
             .catch((error) => {
               console.error("删除行时出错:", error);
               this.$message.error("删除失败");
+            })
+            .finally(() => {
+              LoadingUtils.closeFullScreenLoading();
             });
         })
         .catch(() => {
