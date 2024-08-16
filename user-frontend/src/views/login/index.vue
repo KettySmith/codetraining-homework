@@ -134,21 +134,25 @@ export default {
 
           const urlParams = new URLSearchParams(formData);
           console.log(formData);
-          axios
-            .post("/api/auth/login", {}, { params: urlParams })
-            .then((res) => {
-              if (res.data.status === 200) {
-                this.$router.push({ path: '/user' });  // 成功登录后跳转到 '/user'
-              } else {
-                this.$message.error(res.data.message || "登录失败");
+          this.$store.dispatch('user/login', formData)
+            .then((data) => {
+              console.log("登录响应数据:", data);
+
+              if (data.status === 200) {
+                this.$router.push({ path: this.redirect || '/', query: this.otherQuery })
+
+              }else {
+                this.$message.error(data.message || "登录失败");
               }
-              this.loading = false;
-              // this.$store.dispatch('user/login', this.loginForm).then(() => {
-            })
+             })
             .catch(() => {
               this.$message.error( "登录失败");
-              this.loading = false;
+            })
+            .finally(() => {
+              this.loading = false
             });
+
+        
         } else {
           console.log("error submit!!");
           return false;

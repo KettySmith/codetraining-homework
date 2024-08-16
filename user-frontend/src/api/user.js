@@ -1,12 +1,10 @@
 import request from '@/utils/request'
 import md5 from 'js-md5'
+import axios from "axios"
 
 export function login(data) {
-  return request({
-    url: '/vue-admin-template/user/login',
-    method: 'post',
-    data
-  })
+          return axios.post("/api/auth/login", {}, { params: data })
+
 }
 
 export function getInfo(token) {
