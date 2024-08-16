@@ -35,31 +35,35 @@ public interface UserMapper extends BaseMapper<User> {
     List<Map<String, Object>> getUserRoleAndPermissionsByUserId(@Param("userIds") List<Long> userIds);
 
 
-    @Select("SELECT u.user_name, u.true_name, u.create_time, u.update_time, u.status, " +
-            "GROUP_CONCAT(r.name ORDER BY r.name ASC SEPARATOR ', ') as role_list  " +
-            "FROM user u  " +
-            "LEFT JOIN user_role ur ON u.id = ur.user_id  " +
-            "LEFT JOIN role r ON ur.role_id = r.id  " +
-            "WHERE u.user_name LIKE CONCAT('%', #{searchContent}, '%') "  +
-            "GROUP BY u.id " +
-            "ORDER BY u.create_time DESC  " +
+//    @Select("SELECT u.* , " +
+//            "GROUP_CONCAT(r.name ORDER BY r.name ASC SEPARATOR ', ') as roleList  " +
+//            "FROM user u  " +
+//            "LEFT JOIN user_role ur ON u.id = ur.user_id  " +
+//            "LEFT JOIN role r ON ur.role_id = r.id  " +
+//            "WHERE u.user_name LIKE CONCAT('%', #{searchContent}, '%') "  +
+//            "GROUP BY u.id " +
+//            "ORDER BY u.create_time DESC  " +
+//            "LIMIT ${(pageNum - 1) * pageSize}, ${pageSize}")
+//    List<User> getUserList(@Param("searchContent") String searchContent,
+//                                          @Param("pageNum")Integer pageNum,
+//                                          @Param("pageSize")  Integer pageSize);
+//
+//
+
+    @Select("SELECT * FROM user " +
+            "WHERE user_name LIKE CONCAT('%', #{searchContent}, '%') " +
+            "ORDER BY create_time DESC " +
             "LIMIT ${(pageNum - 1) * pageSize}, ${pageSize}")
-    List<Map<String, Object>> getUserList(@Param("searchContent") String searchContent,
-                                          @Param("pageNum")Integer pageNum,
-                                          @Param("pageSize")  Integer pageSize);
+    List<User> getUserList(@Param("searchContent") String searchContent,
+                           @Param("pageNum") Integer pageNum,
+                           @Param("pageSize") Integer pageSize);
 
-    @Select("")
-    void addUser(@Param("userName") String userName,
-                 @Param("trueName") String trueName,
-                 @Param("password") String password,
-                 @Param("email") String email,
-                 @Param("gender") Integer gender,
-                 @Param("address") String address,
-                 @Param("introduction") String introduction,
-                 @Param("phone") String phone,
-                 @Param("roleIds") List<Integer> roleIds);
-
-
+    @Select("SELECT ur.user_id as userId, GROUP_CONCAT(r.name ORDER BY r.name ASC SEPARATOR ', ') as roleList " +
+            "FROM user_role ur " +
+            "LEFT JOIN role r ON ur.role_id = r.id " +
+            "WHERE ur.user_id IN (${userIds}) " +
+            "GROUP BY ur.user_id")
+    List<Map<String, Object>> getUserRoleList(@Param("userIds") String userIds);
 
 
 

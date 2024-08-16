@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
@@ -39,8 +40,36 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public List<Map<String, Object>> getUserList(String searchContent, Integer pageNum, Integer pageSize) {
-        return userMapper.getUserList(searchContent, pageNum,  pageSize);
+    public List<User> getUserList(String searchContent, Integer pageNum, Integer pageSize) {
+
+        // 第一次查询：获取用户列表
+        List<User> userList = userMapper.getUserList(searchContent, pageNum, pageSize);
+
+        // 获取所有用户的ID列表
+        String userIds = userList.stream()
+                .map(user -> user.getId().toString())
+                .collect(Collectors.joining(","));
+
+        // 第二次查询：获取用户ID与角色列表的映射关系
+        List<Map<String, Object>> roleMapList = userMapper.getUserRoleList(userIds);
+
+        // 构建用户ID到角色列表的映射
+        Map<Long, String> userIdToRoleListMap = roleMapList.stream()
+                .collect(Collectors.toMap(
+                        map -> (Long) map.get("userId"),
+                        map -> (String) map.get("roleList")
+                ));
+
+        // 将角色列表设置到用户对象中
+        for (User user : userList) {
+            String roleListStr = userIdToRoleListMap.get(user.getId());
+            if (roleListStr != null) {
+                user.setRoleList(Arrays.asList(roleListStr.split(", ")));
+            }
+        }
+
+        return userList;
+
     }
 
     @Override

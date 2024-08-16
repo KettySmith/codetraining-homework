@@ -95,10 +95,10 @@
           <img :id="'avatar-' + scope.row.id" class="table-avatar" />
         </template>
       </el-table-column>
-      <el-table-column prop="user_name" label="用户名" sortable="custom" />
-      <el-table-column prop="true_name" label="真实姓名" sortable="custom" />
-      <el-table-column prop="role_list" label="角色" sortable="custom" />
-      <el-table-column prop="create_time" label="创建时间" sortable="custom" />
+      <el-table-column prop="userName" label="用户名" sortable="custom" />
+      <el-table-column prop="trueName" label="真实姓名" sortable="custom" />
+      <el-table-column prop="roleList" label="角色" sortable="custom" />
+      <el-table-column prop="createTime" label="创建时间" sortable="custom" />
       <el-table-column
         prop="status"
         label="是否激活"
@@ -391,9 +391,10 @@ export default {
       ) {
         callback();
       } else {
+       
+      
         checkUserName(value).then((res) => {
-          console.log("checkName:")
-          console.log(res.data)
+          
           callback(res.data ? new Error("用户名已存在") : undefined);
         });
       }
@@ -439,6 +440,8 @@ export default {
       axios
         .get(`/api/users/getUserList`, { params })
         .then((response) => {
+          console.log("getUserList:");
+          console.log(response.data.data);
           this.tableData.list = response.data.data;
           this.listLoading = false;
         })
@@ -477,6 +480,8 @@ export default {
     // .post("/api/users/addUser", {}, { params: urlParams })
 
     addOrUpdateUser() {
+      console.log("this.userEditForm.id:")
+      console.log(this.userEditForm.id)
       this.$refs.userEditForm.validate((valid) => {
         if (valid) {
           const params = copyObject(this.userEditForm);
@@ -490,13 +495,15 @@ export default {
 
           LoadingUtils.createFullScreenLoading("正在保存...");
           var url;
-          if(this.userEditForm.id){
-            url="/api/users/updateUser"
-          }else{
-            url="/api/users/addUser"
+          if (this.userEditForm.id) {
+            url = "/api/users/updateUser";
+          } else {
+            
+            url = "/api/users/addUser";
           }
-          
-          axios.post("/api/users/addUser", {}, { params: urlParams })
+
+          axios
+            .post(url, {}, { params: urlParams })
             .then((res) => {
               this.$message.success("操作成功");
               if (!this.userEditForm.id) {
@@ -513,13 +520,31 @@ export default {
     },
 
     handleEdit(row) {
+      console.log("row:");
       console.log(row);
+      this.currentEditRow = row
+
+      for (const key in this.userEditForm) {
+        this.userEditForm[key] = row[key];
+      }
+      // 根据 row.roleList 更新 userEditForm.roleIds
+      this.userEditForm.roleIds = row.roleList
+        .map((roleName) => {
+          const role = this.allRoles.find((role) => role.name === roleName);
+          return role ? role.id : null;
+        })
+        .filter((id) => id); // 过滤掉 null 值
+
+      console.log("form:");
+      console.log(this.userEditForm);
+      console.log("role:");
+      console.log(this.allRoles);
       this.dialogStatus = "edit";
-      this.addTemp = { ...row };
-      this.editId = row.id;
       this.userEditDialogVisible = true;
+
+      //
       this.$nextTick(() => {
-        this.$refs["addDataForm"].clearValidate(); // 清空表单验证状态
+        this.$refs["userEditForm"].clearValidate(); // 清空表单验证状态
       });
     },
 

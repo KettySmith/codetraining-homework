@@ -62,7 +62,7 @@ public class UserController {
             @ApiImplicitParam(paramType = "query", name = "pageSize", value = "单页元素数目", dataType = "int")
     })
     @GetMapping(value = "/getUserList")
-    public ResponseVO<List<Map<String, Object>>> getUserList(@RequestParam(value = "searchContent",required = false,defaultValue = "")String searchContent,
+    public ResponseVO<List<User>> getUserList(@RequestParam(value = "searchContent",required = false,defaultValue = "")String searchContent,
                                                        @RequestParam(value = "pageNum",required = false)Integer pageNum,
                                                        @RequestParam(value = "pageSize",required = false)Integer pageSize) {
 
@@ -89,7 +89,7 @@ public class UserController {
                                     @RequestParam(value = "trueName", required = false,defaultValue = "") String trueName,
                                     @RequestParam(value = "password") String password,
                                     @RequestParam(value = "email", required = false,defaultValue = "") String email,
-                                    @RequestParam(value = "gender", required = false,defaultValue = "") Integer gender,
+                                    @RequestParam(value = "gender", required = false) Integer gender,
                                     @RequestParam(value = "address", required = false,defaultValue = "") String address,
                                     @RequestParam(value = "introduction", required = false,defaultValue = "") String introduction,
                                     @RequestParam(value = "phone", required = false,defaultValue = "") String phone,
@@ -97,7 +97,6 @@ public class UserController {
 
         User user;
         try {
-            System.out.println("@@@"+userName);
 
             user = userService.addUser(userName, trueName, password, email, gender, address, introduction, phone, roleIds);
             return ResponseVO.success(user);
@@ -108,13 +107,53 @@ public class UserController {
 
     }
 
-//    @PostMapping(value="/addUser")
-//    @ApiOperation(value = "添加用户")
-//    public ResponseVO<User> addUser(@RequestBody UserDTO userInfo) {
-//
-//        return ResponseVO.success();
-//    }
+    @ApiOperation(value = "更新用户信息", notes = "更新用户信息")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "query", name = "id", value = "用户id", dataType = "Long", required = true),
+            @ApiImplicitParam(paramType = "query", name = "userName", value = "用户名", dataType = "String", required = true),
+            @ApiImplicitParam(paramType = "query", name = "trueName", value = "真实姓名", dataType = "String"),
+            @ApiImplicitParam(paramType = "query", name = "password", value = "密码", dataType = "String", required = true),
+            @ApiImplicitParam(paramType = "query", name = "email", value = "邮箱", dataType = "String"),
+            @ApiImplicitParam(paramType = "query", name = "gender", value = "性别（0: 男, 1: 女）", dataType = "int"),
+            @ApiImplicitParam(paramType = "query", name = "address", value = "地址", dataType = "String"),
+            @ApiImplicitParam(paramType = "query", name = "introduction", value = "简介", dataType = "String"),
+            @ApiImplicitParam(paramType = "query", name = "phone", value = "电话", dataType = "String"),
+            @ApiImplicitParam(paramType = "query", name = "roleIds", value = "角色ID列表", dataType = "List<Integer>")
+    })
+    @PostMapping(value = "/updateUser")
+    public ResponseVO<String> updateUser(@RequestParam(value = "id") Long id,
+                                    @RequestParam(value = "userName") String userName,
+                                    @RequestParam(value = "trueName", required = false,defaultValue = "") String trueName,
+                                    @RequestParam(value = "password",required = false,defaultValue = "") String password,
+                                    @RequestParam(value = "email", required = false,defaultValue = "") String email,
+                                    @RequestParam(value = "gender", required = false) Integer gender,
+                                    @RequestParam(value = "address", required = false,defaultValue = "") String address,
+                                    @RequestParam(value = "introduction", required = false,defaultValue = "") String introduction,
+                                    @RequestParam(value = "phone", required = false,defaultValue = "") String phone,
+                                    @RequestParam(value = "roleIds", required = false) List<Integer> roleIds) {
+        User user = userService.getById(id);
+        if (user == null) {
+            return ResponseVO.error(StatusEnum.USER_NOT_FOUND);
+        }
 
-
+        System.out.println("@@"+gender);
+        user.setUserName(userName);
+        user.setTrueName(trueName);
+        if(password != "") {
+            user.setPassword(password);
+        }
+        user.setEmail(email);
+        user.setGender(gender != null ? gender : null);
+        user.setAddress(address);
+        user.setIntroduction(introduction);
+        user.setPhone(phone);
+        user.setUpdateTime(new Date());
+        userService.updateById(user);
+        if (roleIds != null) {
+            userRoleService.addUserRole(id, roleIds, true);
+//            ServletUtils.updatePermission(Collections.singletonList(userInfo.getId()));
+        }
+        return ResponseVO.success("更新成功");
+    }
 
 }
