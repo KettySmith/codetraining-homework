@@ -99,7 +99,7 @@
       <el-table-column prop="trueName" label="真实姓名"  />
       <el-table-column prop="roleList" label="角色"  />
       <el-table-column prop="createTime" label="创建时间"  />
-      <el-table-column
+      <!-- <el-table-column
         prop="status"
         label="是否激活"
         width="100"
@@ -112,7 +112,7 @@
             @change="handleSwitch(scope.row)"
           />
         </template>
-      </el-table-column>
+      </el-table-column> -->
       <el-table-column label="操作">
         <template slot-scope="scope">
           <el-button
@@ -450,10 +450,7 @@ export default {
           } else {
             url = "/api/users/addUser";
           }
-          console.log("this.userEditForm.id:");
-          console.log(this.userEditForm.id);
-          console.log("params:");
-          console.log(params);
+          
           axios
             .post(url, {}, { params: urlParams })
             .then((res) => {
@@ -472,8 +469,7 @@ export default {
     },
 
     handleEdit(row) {
-      console.log("row:");
-      console.log(row);
+     
       this.currentEditRow = row;
 
       for (const key in this.userEditForm) {
@@ -487,10 +483,7 @@ export default {
         })
         .filter((id) => id); // 过滤掉 null 值
 
-      console.log("form:");
-      console.log(this.userEditForm);
-      console.log("role:");
-      console.log(this.allRoles);
+     
       this.dialogStatus = "edit";
       this.userEditDialogVisible = true;
 
@@ -518,7 +511,6 @@ export default {
           LoadingUtils.createFullScreenLoading("正在删除...");
           const params = new URLSearchParams();
           userIds.forEach((id) => params.append("userIds", id));
-          console.log(params)
           axios
             .post("/api/users/deleteUser", {}, {params }) // 假设 'id' 是唯一标识符
             .then((response) => {
