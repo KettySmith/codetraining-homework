@@ -105,6 +105,10 @@ public class UserUtils {
      */
     public static ResponseVO<Map<String, Object>> handleUserLogin(User user, String password) {
 
+
+
+
+
         if (!User.Status.ENABLE.equals(user.getStatus())) {
             return ResponseVO.error(StatusEnum.USER_DISABLED);
         }
@@ -112,15 +116,12 @@ public class UserUtils {
             return ResponseVO.error(StatusEnum.PASSWORD_ERROR);
         }
         List<Map<String, Object>> roleAndPermissionInfo = instance.userService.getUserRoleAndPermissionsByUserId(Collections.singletonList(user.getId()));
-        System.out.println(("@@@"+roleAndPermissionInfo));
         Map<String, Object> tempInfo = roleAndPermissionInfo.get(0);
         String platformList = (String) tempInfo.get("platformList");
         if ( !Arrays.asList(platformList.split(",")).contains("2")) {
             return ResponseVO.error(StatusEnum.PERMISSION_DENIED_FOR_PLATFORM);
         }
-
-
-
+//
 //        setUserRoleAndPermissionInfo(user, roleAndPermissionInfo);
 //        String roleNameList = String.join(",", user.getRoleList());
 //        String permissionCodeList = String.join(",", user.getPermissionList());
