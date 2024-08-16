@@ -55,19 +55,19 @@ export const constantRoutes = [
     }]
   },
 
-  {
-    path: '/role',
-    component: Layout,
-    redirect: '/role',
-    children: [
-      {
-        path: 'role',
-        name: 'Role',
-        component: () => import('@/views/role/index'),
-        meta: { title: 'Role', icon: 'el-icon-s-opportunity' }
-      }
-    ]
-  },
+  // {
+  //   path: '/role',
+  //   component: Layout,
+  //   redirect: '/role',
+  //   children: [
+  //     {
+  //       path: 'role',
+  //       name: 'Role',
+  //       component: () => import('@/views/role/index'),
+  //       meta: { title: 'Role', icon: 'el-icon-s-opportunity' }
+  //     }
+  //   ]
+  // },
 
   // {
   //   path: '/permission',
