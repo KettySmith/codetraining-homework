@@ -13,6 +13,7 @@ import com.example.user.utils.DataUtils;
 import com.example.user.utils.IdGenerator;
 import com.example.user.utils.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,7 +41,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public List<User> getUserList(String searchContent, Integer pageNum, Integer pageSize) {
+    public Page<User> getUserList(String searchContent, Integer pageNum, Integer pageSize) {
 
         // 第一次查询：获取用户列表
         List<User> userList = userMapper.getUserList(searchContent, pageNum, pageSize);
@@ -68,7 +69,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             }
         }
 
-        return userList;
+
+        int total = userMapper.countUserList(searchContent);
+        return DataUtils.getPage(userList, total, pageNum, pageSize);
+
 
     }
 

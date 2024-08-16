@@ -95,14 +95,13 @@
           <img :id="'avatar-' + scope.row.id" class="table-avatar" />
         </template>
       </el-table-column>
-      <el-table-column prop="userName" label="用户名" sortable="custom" />
-      <el-table-column prop="trueName" label="真实姓名" sortable="custom" />
-      <el-table-column prop="roleList" label="角色" sortable="custom" />
-      <el-table-column prop="createTime" label="创建时间" sortable="custom" />
+      <el-table-column prop="userName" label="用户名" />
+      <el-table-column prop="trueName" label="真实姓名"  />
+      <el-table-column prop="roleList" label="角色"  />
+      <el-table-column prop="createTime" label="创建时间"  />
       <el-table-column
         prop="status"
         label="是否激活"
-        sortable="custom"
         width="100"
       >
         <template slot-scope="scope">
@@ -391,10 +390,11 @@ export default {
       };
       axios
         .get(`/api/users/getUserList`, { params })
-        .then((response) => {
-          console.log("getUserList:");
-          console.log(response.data.data);
-          this.tableData.list = response.data.data;
+        .then((res) => {
+         
+          this.tableData.list = res.data.data.content;
+          this.tableData.total = res.data.data.totalElements
+
           this.listLoading = false;
         })
         .catch((error) => {

@@ -66,31 +66,7 @@ public interface UserMapper extends BaseMapper<User> {
     List<Map<String, Object>> getUserRoleList(@Param("userIds") String userIds);
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    @Select("SELECT COUNT(*) from user  " +
+            "where user_name LIKE CONCAT('%', #{searchContent}, '%')")
+    int countUserList(@Param("searchContent") String searchContent);
 }

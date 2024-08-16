@@ -63,7 +63,7 @@ public class UserController {
             @ApiImplicitParam(paramType = "query", name = "pageSize", value = "单页元素数目", dataType = "int")
     })
     @GetMapping(value = "/getUserList")
-    public ResponseVO<List<User>> getUserList(@RequestParam(value = "searchContent",required = false,defaultValue = "")String searchContent,
+    public ResponseVO<Page<User>> getUserList(@RequestParam(value = "searchContent",required = false,defaultValue = "")String searchContent,
                                                        @RequestParam(value = "pageNum",required = false)Integer pageNum,
                                                        @RequestParam(value = "pageSize",required = false)Integer pageSize) {
 

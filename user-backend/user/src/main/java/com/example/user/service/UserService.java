@@ -14,7 +14,7 @@ public interface UserService extends IService<User> {
 
     List<Map<String, Object>> getUserRoleAndPermissionsByUserId(List<Long> userIds);
 
-    List<User> getUserList(String searchContent, Integer pageNum, Integer pageSize);
+    Page<User> getUserList(String searchContent, Integer pageNum, Integer pageSize);
 
     User addOneUser(UserDTO userDTO) throws CustomRuntimeException;
     User addUser(String userName, String trueName, String password, String email, Integer gender, String address, String introduction, String phone, List<Integer> roleIds);
