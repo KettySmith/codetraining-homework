@@ -480,8 +480,7 @@ export default {
     // .post("/api/users/addUser", {}, { params: urlParams })
 
     addOrUpdateUser() {
-      console.log("this.userEditForm.id:")
-      console.log(this.userEditForm.id)
+     
       this.$refs.userEditForm.validate((valid) => {
         if (valid) {
           const params = copyObject(this.userEditForm);
@@ -501,7 +500,10 @@ export default {
             
             url = "/api/users/addUser";
           }
-
+          console.log("this.userEditForm.id:")
+      console.log(this.userEditForm.id)
+      console.log("params:")
+      console.log(params)
           axios
             .post(url, {}, { params: urlParams })
             .then((res) => {

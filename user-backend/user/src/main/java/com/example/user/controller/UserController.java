@@ -89,7 +89,7 @@ public class UserController {
                                     @RequestParam(value = "trueName", required = false,defaultValue = "") String trueName,
                                     @RequestParam(value = "password") String password,
                                     @RequestParam(value = "email", required = false,defaultValue = "") String email,
-                                    @RequestParam(value = "gender", required = false) Integer gender,
+                                    @RequestParam(value = "gender", required = false,defaultValue = "-1") Integer gender,
                                     @RequestParam(value = "address", required = false,defaultValue = "") String address,
                                     @RequestParam(value = "introduction", required = false,defaultValue = "") String introduction,
                                     @RequestParam(value = "phone", required = false,defaultValue = "") String phone,
